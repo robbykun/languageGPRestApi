@@ -1,0 +1,10 @@
+FROM golang:rc-buster
+
+RUN mkdir /app
+
+COPY go.mod /app/go.mod
+COPY go.sum /code/go.sum
+
+WORKDIR /app
+
+RUN go mod download
