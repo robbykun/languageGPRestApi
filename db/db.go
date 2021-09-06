@@ -64,4 +64,5 @@ func Close() {
 func autoMigration() {
 	db.AutoMigrate(&Project{})
 	db.AutoMigrate(&Language{})
+	db.AutoMigrate(&Station{})
 }

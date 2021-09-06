@@ -1,7 +1,10 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"reflect"
 
@@ -60,6 +63,76 @@ func Init() {
 				fmt.Printf("%+v\n", language)
 				db.GetDB().Create(&language)
 			}
+		}
+		c.JSON(http.StatusOK, "")
+	})
+
+	// CREATE
+	// 駅マスタ作成
+	r.POST("/station", func(c *gin.Context) {
+
+		// 路線情報を取得
+		url := "http://express.heartrails.com/api/json?method=getLines&prefecture=%E6%9D%B1%E4%BA%AC%E9%83%BD"
+
+		response, err := http.Get(url)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer response.Body.Close()
+
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		type LineInfo struct {
+			Response struct {
+				Line []string `json:"line"`
+			}
+		}
+		var lineInfo LineInfo
+
+		json.Unmarshal(body, &lineInfo)
+
+		// 駅情報を取得
+		for _, line := range lineInfo.Response.Line {
+			url = "http://express.heartrails.com/api/json?method=getStations&line=" + line + "&prefecture=%E6%9D%B1%E4%BA%AC%E9%83%BD"
+
+			response, err = http.Get(url)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			body, err = ioutil.ReadAll(response.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			type StationInfo struct {
+				Response struct {
+					Station []struct {
+						StationName string  `json:"name"`
+						Keido       float64 `json:"x"`
+						Ido         float64 `json:"y"`
+					} `json:"station"`
+				} `json:"response"`
+			}
+			var stationInfo StationInfo
+			json.Unmarshal(body, &stationInfo)
+
+			// DB登録
+			for _, resStation := range stationInfo.Response.Station {
+
+				station := &db.Station{}
+
+				copyStruct(resStation, station)
+
+				fmt.Println(station)
+
+				db.GetDB().Create(&station)
+			}
+
 		}
 		c.JSON(http.StatusOK, "")
 	})
