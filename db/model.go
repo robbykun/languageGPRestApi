@@ -15,8 +15,7 @@ type Language struct {
 
 // 駅マスタ
 type Station struct {
-	StationNo   int `gorm:"primary_key"`
-	StationName string
+	StationName string `gorm:"primary_key"`
 	Ido         float64
 	Keido       float64
 }
