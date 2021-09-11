@@ -175,7 +175,7 @@ func Init() {
 
 		results := &[]Results{}
 
-		db.GetDB().Debug().Table("projects").
+		db.GetDB().Table("projects").
 			Select("station, ido, keido, avg(price) as \"avg\", max(price) as \"max\", min(price) as \"min\", count(*) as \"count\"").
 			Joins("inner join languages on projects.project_no = languages.project_no").
 			Joins("inner join stations on projects.station = stations.station_name").
